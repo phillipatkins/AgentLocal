@@ -90,11 +90,13 @@ function banner(botName = 'Bot', version = '1.0') {
   const width = Math.min(process.stdout.columns || 80, 88);
   const bar   = chalk.hex('#00d4ff')('═'.repeat(width));
 
-  console.log('');
+  console.clear();
+  require('./logo').print();
+
   console.log(bar);
   console.log('');
 
-  const title = `  WhatsApp AI Bot  ·  ${botName}`;
+  const title = `  ${botName}  ·  WhatsApp AI Bot`;
   const sub   = `  Ollama + whatsapp-web.js  ·  v${version}`;
   console.log(chalk.hex('#00d4ff').bold(title));
   console.log(chalk.gray(sub));

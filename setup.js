@@ -29,10 +29,10 @@ const bold = chalk.white.bold;
 
 function banner() {
   console.clear();
-  console.log('');
+  require('./utils/logo').print();
   console.log(bar());
   console.log('');
-  console.log(hi('  WhatsApp AI Bot  ·  Setup Wizard'));
+  console.log(hi('  Setup Wizard'));
   console.log(dim('  Configure your bot before first launch.'));
   console.log('');
   console.log(bar());
