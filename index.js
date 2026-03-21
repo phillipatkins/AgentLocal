@@ -21,6 +21,7 @@ const fs    = require('fs');
 const path  = require('path');
 const axios = require('axios');
 const chalk = require('chalk');
+const { checkForUpdate } = require('./utils/updater');
 
 // ─── First-run setup check ────────────────────────────────────────────────────
 if (!botConfig.isSetupComplete()) {
@@ -35,6 +36,11 @@ if (!botConfig.isSetupComplete()) {
 }
 
 const BC = botConfig.get();
+
+// ─── Update check ─────────────────────────────────────────────────────────────
+(async () => { await checkForUpdate(); startBot(); })();
+
+function startBot() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function styled(text) {
@@ -685,3 +691,5 @@ try {
 
 logger.section('Connecting to WhatsApp');
 client.initialize();
+
+} // end startBot()

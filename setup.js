@@ -14,6 +14,7 @@ const os       = require('os');
 const { execSync, exec } = require('child_process');
 
 const botConfigUtil = require('./utils/bot_config');
+const { checkForUpdate } = require('./utils/updater');
 const chalk = require('chalk');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -216,18 +217,28 @@ async function runInstaller(defaultModel) {
       name: 'yt-dlp (YouTube downloads)',
       check: () => cmdExists('yt-dlp'),
       install: () => {
-        const pipBin = cmdExists('pip3') ? 'pip3' : cmdExists('pip') ? 'pip' : null;
-        if (!pipBin) throw new Error('pip not found — install Python first');
-        execSync(`${pipBin} install yt-dlp`, { stdio: 'inherit', shell: true });
+        // Try pipx first (handles externally-managed-environment), fall back to venv pip
+        if (cmdExists('pipx')) {
+          execSync('pipx install yt-dlp', { stdio: 'inherit', shell: true });
+        } else {
+          const venvPip = path.join(os.homedir(), 'venv', 'bin', 'pip');
+          if (!fs.existsSync(venvPip)) {
+            execSync(`python3 -m venv ${path.join(os.homedir(), 'venv')}`, { stdio: 'inherit', shell: true });
+          }
+          execSync(`${venvPip} install yt-dlp`, { stdio: 'inherit', shell: true });
+        }
       },
     },
     {
       name: 'faster-whisper (speech-to-text)',
       check: () => pyModuleExists('faster_whisper'),
       install: () => {
-        const pipBin2 = cmdExists('pip3') ? 'pip3' : cmdExists('pip') ? 'pip' : null;
-        if (!pipBin2) throw new Error('pip not found — install Python first');
-        execSync(`${pipBin2} install faster-whisper`, { stdio: 'inherit', shell: true });
+        const venvDir = path.join(os.homedir(), 'venv');
+        const venvPip = path.join(venvDir, 'bin', 'pip');
+        if (!fs.existsSync(venvPip)) {
+          execSync(`python3 -m venv ${venvDir}`, { stdio: 'inherit', shell: true });
+        }
+        execSync(`${venvPip} install faster-whisper`, { stdio: 'inherit', shell: true });
       },
     },
     {
@@ -292,6 +303,11 @@ async function runInstaller(defaultModel) {
 // ─── Main setup flow ──────────────────────────────────────────────────────────
 async function run() {
   banner();
+
+  // ── Update check ─────────────────────────────────────────────────────────────
+  createRl();
+  await checkForUpdate(rl);
+  rl.close();
 
   const existing = botConfigUtil.load();
   const isReconfigure = existing.setup_complete;
