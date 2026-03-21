@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Local — Your Personal AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cyan:    #00d4ff;
+  --cyan2:   #0097b8;
+  --dark:    #050810;
+  --glass:   rgba(255,255,255,0.04);
+  --glass-b: rgba(255,255,255,0.08);
+  --border:  rgba(255,255,255,0.08);
+  --text:    #c8d8e8;
+  --muted:   #6b8099;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--dark);
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* ── Video Background ───────────────────────────────────────────────────── */
+.bg-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.bg-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+}
+
+.bg-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.07) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(5,8,16,0.4) 0%, rgba(5,8,16,0.7) 60%, rgba(5,8,16,0.98) 100%);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.page { position: relative; z-index: 1; }
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 48px;
+  position: relative;
+  z-index: 10;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.nav-logo img {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+}
+
+.nav-logo span {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: #fff; }
+
+.nav-cta {
+  background: var(--cyan);
+  color: #000 !important;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  transition: opacity 0.2s !important;
+}
+
+.nav-cta:hover { opacity: 0.85; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 90px 24px 80px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--cyan);
+  font-weight: 500;
+  margin-bottom: 36px;
+  letter-spacing: 0.3px;
+}
+
+.hero-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.3); }
+}
+
+.hero h1 {
+  font-size: clamp(42px, 7vw, 76px);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+}
+
+.hero h1 .accent { color: var(--cyan); }
+
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 20px);
+  color: var(--text);
+  max-width: 560px;
+  margin: 0 auto 44px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--cyan);
+  color: #000;
+}
+
+.btn-primary:hover {
+  background: #00bde6;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0,212,255,0.3);
+}
+
+.btn-ghost {
+  background: var(--glass-b);
+  color: #fff;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.12);
+  transform: translateY(-1px);
+}
+
+/* ── Stats bar ────────────────────────────────────────────────────────────── */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 70px auto 0;
+  max-width: 700px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.stat {
+  flex: 1;
+  padding: 24px 20px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.stat:last-child { border-right: none; }
+
+.stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--cyan);
+  letter-spacing: -1px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Section titles ───────────────────────────────────────────────────────── */
+.section { padding: 90px 0; }
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.section-sub {
+  font-size: 16px;
+  color: var(--text);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+/* ── Features grid ────────────────────────────────────────────────────────── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 56px;
+}
+
+.feat {
+  background: var(--dark);
+  padding: 32px 28px;
+  transition: background 0.2s;
+}
+
+.feat:hover { background: rgba(0,212,255,0.04); }
+
+.feat-icon {
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+
+.feat h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.feat p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── Setup section ────────────────────────────────────────────────────────── */
+.setup-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.setup-text .section-sub { max-width: 100%; margin-top: 14px; }
+
+.setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-body h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.step-body p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.code-block {
+  background: #0a0f1a;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.code-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+}
+
+.code-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.code-dot:nth-child(1) { background: #ff5f57; }
+.code-dot:nth-child(2) { background: #ffbd2e; }
+.code-dot:nth-child(3) { background: #28c840; }
+
+.code-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.code-body {
+  padding: 24px 24px;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 2;
+}
+
+.code-body .c-dim  { color: #4a6080; }
+.code-body .c-cmd  { color: #c8d8e8; }
+.code-body .c-cyan { color: var(--cyan); }
+.code-body .c-grn  { color: #4ec97f; }
+
+/* ── Commands ─────────────────────────────────────────────────────────────── */
+.commands-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 48px;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.cmd-item:hover {
+  border-color: rgba(0,212,255,0.25);
+  background: rgba(0,212,255,0.04);
+}
+
+.cmd-tag {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--cyan);
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: 6px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cmd-desc {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Privacy banner ───────────────────────────────────────────────────────── */
+.privacy-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 56px;
+}
+
+.privacy-item {
+  background: var(--dark);
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.privacy-icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+}
+
+.privacy-item h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.privacy-item p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── CTA ────────────────────────────────────────────────────────────────── */
+.cta-section {
+  padding: 80px 0 100px;
+  text-align: center;
+}
+
+.cta-box {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 70px 40px;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(0,212,255,0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.cta-box h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 14px;
+}
+
+.cta-box p {
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 36px;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.footer-logo img {
+  height: 24px;
+  width: 24px;
+  object-fit: contain;
+}
+
+.footer-logo span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.footer-copy {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: #fff; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 20px 24px; }
+  .nav-links { display: none; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .setup-wrap { grid-template-columns: 1fr; }
+  .commands-grid { grid-template-columns: 1fr; }
+  .privacy-bar { grid-template-columns: 1fr; }
+  .stats { flex-wrap: wrap; }
+  footer { flex-direction: column; gap: 20px; text-align: center; }
+}
+
+@media (max-width: 600px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .hero h1 { letter-spacing: -1px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Video Background -->
+<div class="bg-wrap">
+  <video autoplay muted loop playsinline>
+    <source src="background.mp4" type="video/mp4">
+  </video>
+</div>
+
+<div class="page">
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <img src="logo.png" alt="Agent Local">
+      <span>Agent Local</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#commands">Commands</a></li>
+      <li><a href="https://github.com/AgentLocal-hub/AgentLocal" class="nav-cta">GitHub →</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Open Source · Self-Hosted · Privacy First</div>
+
+    <h1>Your AI.<br><span class="accent">Your Machine.</span></h1>
+
+    <p class="hero-sub">
+      A powerful WhatsApp AI assistant powered by local LLMs.
+      No cloud. No subscriptions. Full control.
+    </p>
+
+    <div class="hero-actions">
+      <a href="https://github.com/AgentLocal-hub/AgentLocal" class="btn btn-primary">
+        ↓ &nbsp;Get Started Free
+      </a>
+      <a href="#features" class="btn btn-ghost">
+        See Features
+      </a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Local</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">15+</div>
+        <div class="stat-label">Tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Any</div>
+        <div class="stat-label">LLM Model</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Free</div>
+        <div class="stat-label">Forever</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-label">Capabilities</div>
+      <div class="section-title">Everything your AI<br>assistant needs</div>
+      <p class="section-sub">Built on Ollama and whatsapp-web.js. Runs entirely on your own hardware.</p>
+
+      <div class="features-grid">
+        <div class="feat">
+          <div class="feat-icon">🤖</div>
+          <h3>Local AI Chat</h3>
+          <p>Run LLaMA, Qwen, Mistral and more via Ollama. Fast, private, offline.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🔍</div>
+          <h3>Web Search</h3>
+          <p>Real-time answers powered by Brave Search API.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🎙️</div>
+          <h3>Voice Assistant</h3>
+          <p>Send voice notes — transcribed by Whisper, replied with TTS.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">📺</div>
+          <h3>YouTube Downloads</h3>
+          <p>Instant audio and video downloads via yt-dlp.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">⚡</div>
+          <h3>Torrent Search</h3>
+          <p>Search and download magnets directly from WhatsApp via aria2c.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">📈</div>
+          <h3>Stock Alerts</h3>
+          <p>Track prices and get notified when targets are hit.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">⏰</div>
+          <h3>Reminders & Scheduling</h3>
+          <p>Morning digests, check-ins, smart reminders and habits.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🧠</div>
+          <h3>Persistent Memory</h3>
+          <p>Remembers conversations, notes, habits across sessions.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🖥️</div>
+          <h3>System Control</h3>
+          <p>Browser automation, screenshots, OCR and terminal access.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section" id="setup">
+    <div class="container">
+      <div class="setup-wrap">
+        <div class="setup-text">
+          <div class="section-label">Quick Start</div>
+          <div class="section-title">Running in minutes</div>
+          <p class="section-sub">The setup wizard handles everything — dependencies, Ollama, WhatsApp linking and configuration.</p>
+
+          <div class="setup-steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Clone the repo</h4>
+                <p>Grab the latest release from GitHub</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Run the setup wizard</h4>
+                <p>Installs all dependencies and walks you through config</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Scan the QR code</h4>
+                <p>Link your WhatsApp account — takes 10 seconds</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <h4>Start the bot</h4>
+                <p>Your AI is live and ready on WhatsApp</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-bar">
+            <div class="code-dot"></div>
+            <div class="code-dot"></div>
+            <div class="code-dot"></div>
+            <span class="code-title">terminal</span>
+          </div>
+          <div class="code-body">
+            <div><span class="c-dim"># Clone</span></div>
+            <div><span class="c-cyan">git</span> <span class="c-cmd">clone https://github.com/</span></div>
+            <div><span class="c-cmd">&nbsp;&nbsp;AgentLocal-hub/AgentLocal</span></div>
+            <div><span class="c-cyan">cd</span> <span class="c-cmd">AgentLocal</span></div>
+            <br>
+            <div><span class="c-dim"># Install &amp; configure</span></div>
+            <div><span class="c-cyan">npm</span> <span class="c-cmd">run setup</span></div>
+            <br>
+            <div><span class="c-dim"># Launch</span></div>
+            <div><span class="c-cyan">npm</span> <span class="c-cmd">start</span></div>
+            <br>
+            <div><span class="c-grn">✔ Bot connected to WhatsApp</span></div>
+            <div><span class="c-grn">✔ Ollama model loaded</span></div>
+            <div><span class="c-grn">✔ Ready</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Commands -->
+  <section class="section" id="commands">
+    <div class="container">
+      <div class="section-label">Commands</div>
+      <div class="section-title">Control everything<br>from WhatsApp</div>
+
+      <div class="commands-grid">
+        <div class="cmd-item">
+          <span class="cmd-tag">search [query]</span>
+          <span class="cmd-desc">Real-time web search</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">find magnet [query]</span>
+          <span class="cmd-desc">Torrent search and download</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">youtube [url]</span>
+          <span class="cmd-desc">Download audio or video</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">remind me [task] at [time]</span>
+          <span class="cmd-desc">Set a smart reminder</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">remember [text]</span>
+          <span class="cmd-desc">Save a memory note</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">stock alert [TICKER] [price]</span>
+          <span class="cmd-desc">Set a stock price alert</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">use gpt / use grok</span>
+          <span class="cmd-desc">Switch to GPT or Grok relay</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-tag">/help</span>
+          <span class="cmd-desc">Full command reference</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section class="section">
+    <div class="container">
+      <div class="privacy-bar">
+        <div class="privacy-item">
+          <div class="privacy-icon">🔒</div>
+          <h3>100% Private</h3>
+          <p>Everything runs on your machine. No data ever leaves your network.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🌐</div>
+          <h3>Multi-Platform</h3>
+          <p>Runs on Linux, macOS, and Windows (including WSL2).</p>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🔓</div>
+          <h3>Open Source</h3>
+          <p>Fully open. Inspect, modify and self-host with no restrictions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Own your AI.<br><span class="accent">Start today.</span></h2>
+        <p>Free forever. No account required. Runs on your hardware.</p>
+        <div class="hero-actions">
+          <a href="https://github.com/AgentLocal-hub/AgentLocal" class="btn btn-primary">
+            ↓ &nbsp;Download on GitHub
+          </a>
+          <a href="#features" class="btn btn-ghost">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <a class="footer-logo" href="#">
+      <img src="logo.png" alt="Agent Local">
+      <span>Agent Local</span>
+    </a>
+    <span class="footer-copy">© 2025 Agent Local · Open Source</span>
+    <ul class="footer-links">
+      <li><a href="https://github.com/AgentLocal-hub/AgentLocal">GitHub</a></li>
+      <li><a href="https://github.com/AgentLocal-hub/AgentLocal#readme">Docs</a></li>
+    </ul>
+  </footer>
+
+</div>
+</body>
+</html>
